@@ -91,15 +91,14 @@ public class ScripterEventHandler {
 	public static void execute(Event event, String name) {
 		if (Loader.mappedScripts.get(name) == null)
 			return;
-		
-		for(String script : Loader.mappedScripts.get(name)) {
+		Loader.mappedScripts.get(name).forEach(script -> {
 			try {
 				Scripter.engine.eval(script);
 				Scripter.invocableEngine.invokeFunction("onEvent", event);
-			} catch (NoSuchMethodException | ScriptException e) {
+			} catch (ScriptException | NoSuchMethodException e) {
 				Scripter.logger.error("Error running " + Loader.getScriptName(script) + " during " + name + " : " + e.getCause().toString() + " : " + e.getStackTrace());
 			}
-		}
+		});
 	}
 
 	public static void execute(FMLStateEvent event, String name) {
