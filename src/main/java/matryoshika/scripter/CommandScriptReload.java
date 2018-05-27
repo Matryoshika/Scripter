@@ -24,6 +24,9 @@ public class CommandScriptReload extends CommandBase{
 	@Override
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		
+		if(!args[0].equals("reload"))
+			return;
+		
 		if(sender.getCommandSenderEntity() instanceof EntityPlayer) {
 			EntityPlayer player = (EntityPlayer) sender.getCommandSenderEntity();
 			if(!player.canUseCommand(server.getOpPermissionLevel(), getName()))
