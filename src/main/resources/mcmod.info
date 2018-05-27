@@ -1,0 +1,16 @@
+[
+{
+  "modid": "scripter",
+  "name": "Scripter",
+  "description": "A Server-side mod that utilizes the Nashorn API to execute code from JavaScript files as Java on runtime.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Matryoshika"],
+  "credits": "Matryoshika for making Scripter, Sun for making the Nashorn API",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
