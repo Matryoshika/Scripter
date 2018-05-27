@@ -9,6 +9,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -16,11 +19,20 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+
+import net.minecraft.launchwrapper.Launch;
+
 public class ObfuscationHelper {
 
 	private static final String defaultMappings = "20171003";
 
-	private static Map<String, String> mappings = new HashMap<String, String>();
+	private static Map<String, String> fields = new HashMap<String, String>();
+	private static Map<String, String> methods = new HashMap<String, String>();
+	
+	private static Map<String, Field> reflectedFields = new HashMap<String, Field>();
+	private static Map<String, Method> reflectedMethods = new HashMap<String, Method>();
 
 	public void verifyMappings() {
 		File fields = new File(Scripter.dir, "config" + File.separator + "Scripter" + File.separator + "fields" + ".csv");
@@ -103,7 +115,10 @@ public class ObfuscationHelper {
 				while ((line = reader.readLine()) != null) {
 					if (!line.equals("searge,name,side,desc")) {
 						String[] split = line.split(",");
-						mappings.put(split[1], split[0]);
+						if(s.equals("fields"))
+							fields.put(split[1], split[0]);
+						if(s.equals("methods"))
+							methods.put(split[1], split[0]);
 					}
 				}
 				reader.close();
@@ -113,21 +128,93 @@ public class ObfuscationHelper {
 		}
 	}
 
-	public static String getObfuscated(String fullClassName) {
-		if (!fullClassName.contains("net.minecraft") || !fullClassName.contains("com.mojang"))
-			return fullClassName;
-
-		String[] split = fullClassName.split(".");
-		String notWanted = split[split.length - 1];
-		String wanted = mappings.get(notWanted);
-
-		String obfuscated = "";
-		for (int i = 0; i < split.length - 2; i++)
-			obfuscated += split[i] + ".";
-
-		obfuscated += wanted;
-
-		return obfuscated;
+	public static String getObfuscatedField(String name) {
+		String obfuscated = fields.get(name);
+		return obfuscated == null ? name : obfuscated;
+	}
+	
+	public static String getObfuscatedMethod(String name) {
+		String obfuscated = methods.get(name);
+		return obfuscated == null ? name : obfuscated;
+	}
+	
+	
+	private static Object executeMethod(Object o, String methodname, Object...varargs) {
+		String deobfuscated = methodname;
+		if(!((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")).booleanValue())
+			methodname = getObfuscatedMethod(methodname);
+		
+		
+		Method method = reflectedMethods.get(methodname);
+		Object toReturn = null;
+		
+		Class<?>[] classes = new Class<?>[varargs.length];
+		for(int i = 0; i < varargs.length; i++) {
+			classes[i] = varargs[i].getClass();
+		}
+		try {
+			if(method == null) {
+				method = MethodUtils.getAccessibleMethod(o.getClass(), methodname, classes);
+				if(method == null) {
+					Scripter.logger.warn("Tried to access non-existing method " + deobfuscated + " in class " + o.getClass().getName());
+					return null;
+				}
+				reflectedMethods.put(methodname, method);
+			}
+			toReturn = method.invoke(o, varargs);
+		} catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		
+		return toReturn;
+	}
+	
+	private static Object getField(Object o, String fieldname) {
+		String deobfuscated = fieldname;
+		if(!((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")).booleanValue())
+			fieldname = getObfuscatedField(fieldname);
+		
+		Field field = reflectedFields.get(fieldname);
+		Object toReturn = null;
+		if(field == null) {
+			field = FieldUtils.getDeclaredField(o.getClass(), fieldname, true);
+			if(field == null) {
+				Scripter.logger.warn("Tried to access non-existing field " + deobfuscated + " in class " + o.getClass().getName());
+				return null;
+			}
+			reflectedFields.put(fieldname, field);
+			try {
+				toReturn = field.get(o);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return toReturn;
+	}
+	
+	private static boolean setField(Object o, String fieldname, Object value) {
+		String deobfuscated = fieldname;
+		if(!((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment")).booleanValue())
+			fieldname = getObfuscatedField(fieldname);
+		
+		Field field = reflectedFields.get(fieldname);
+		if(field == null) {
+			field = FieldUtils.getDeclaredField(o.getClass(), fieldname, true);
+			if(field == null) {
+				Scripter.logger.warn("Tried to access non-existing field " + deobfuscated + " in class " + o.getClass().getName());
+				return false;
+			}
+			reflectedFields.put(fieldname, field);
+		}
+		
+		try {
+			field.set(o, value);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		
+		return true;
 	}
 
 }

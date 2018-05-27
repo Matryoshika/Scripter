@@ -2,6 +2,7 @@ package matryoshika.scripter;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.launchwrapper.Launch;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -31,24 +32,17 @@ public class Scripter {
 	protected static Logger logger;
 	protected static File dir;
 	protected static File jar;
-	
 	public static ObfuscationHelper helper = new ObfuscationHelper();
-	public static ScriptEngine engine;
-	{
-		if((Boolean) Launch.blackboard.get("fml.deobfuscatedEnvironment"))
-			engine = new ScriptEngineManager(null).getEngineByName("nashorn");
-		else
-			engine = new ScriptEngineManager().getEngineByName("nashorn");
-	}
+	public static ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
 	public static Invocable invocableEngine = (Invocable) engine;
 	protected static int timer = 0;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		logger = event.getModLog();
 		jar = event.getSourceFile();
 		helper.verifyMappings();
 		helper.readMappings();
-		logger = event.getModLog();
 		dir = event.getModConfigurationDirectory();
 		
 		Loader.loadScripts(new File(Scripter.dir, "Scripter"));

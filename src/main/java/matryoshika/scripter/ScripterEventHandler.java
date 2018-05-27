@@ -1,5 +1,8 @@
 package matryoshika.scripter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.script.ScriptContext;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
@@ -86,19 +89,18 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 @Mod.EventBusSubscriber
 public class ScripterEventHandler {
 
-	private static ScriptContext ctx = new SimpleScriptContext();
-
 	public static void execute(Event event, String name) {
 		if (Loader.mappedScripts.get(name) == null)
 			return;
-		Loader.mappedScripts.get(name).forEach(script -> {
+		
+		for(String script : Loader.mappedScripts.get(name)) {
 			try {
 				Scripter.engine.eval(script);
 				Scripter.invocableEngine.invokeFunction("onEvent", event);
-			} catch (ScriptException | NoSuchMethodException e) {
+			} catch (Exception e) {
 				Scripter.logger.error("Error running " + Loader.getScriptName(script) + " during " + name + " : " + e.getCause().toString() + " : " + e.getStackTrace());
 			}
-		});
+		}
 	}
 
 	public static void execute(FMLStateEvent event, String name) {
