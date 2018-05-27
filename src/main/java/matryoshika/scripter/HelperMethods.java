@@ -49,4 +49,8 @@ public class HelperMethods {
 		axis = axis.toLowerCase();
 		return axis.equals("x") ? entity.posX : axis.equals("y") ? entity.posY : axis.equals("z") ? entity.posZ : 0D;
 	}
+	
+	public static void updatePlayerInventory(EntityPlayerMP player) {
+		player.sendContainerToPlayer(player.inventoryContainer);
+	}
 }
