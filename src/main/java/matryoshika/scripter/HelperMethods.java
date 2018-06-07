@@ -48,9 +48,8 @@ public class HelperMethods {
 		return ForgeRegistries.BLOCKS.getValue(new ResourceLocation(name));
 	}
 
-	public static double getPosition(Entity entity, String axis) {
-		axis = axis.toLowerCase();
-		return axis.equals("x") ? entity.posX : axis.equals("y") ? entity.posY : axis.equals("z") ? entity.posZ : 0D;
+	public static double[] getPosition(Entity entity) {
+		return new double[]{entity.posX, entity.posY, entity.posZ};
 	}
 
 	public static void updatePlayerInventory(EntityPlayerMP player) {
