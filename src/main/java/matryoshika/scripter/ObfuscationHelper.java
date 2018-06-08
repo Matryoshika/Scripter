@@ -43,7 +43,7 @@ public class ObfuscationHelper {
 	}
 
 	private void makeDefaultFiles() {
-		String zipUrl = "http://export.mcpbot.bspk.rs/mcp_snapshot_nodoc/" + defaultMappings + "-1.12/mcp_snapshot_nodoc-" + defaultMappings + "-1.12.zip";
+		String zipUrl = "http://export.mcpbot.bspk.rs/mcp_snapshot_nodoc/" + defaultMappings + "-1.12/mcp_snapshot-" + defaultMappings + "-1.12.zip";
 		try {
 			URL url = new URL(zipUrl);
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
