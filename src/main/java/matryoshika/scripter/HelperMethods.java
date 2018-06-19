@@ -1,9 +1,15 @@
 package matryoshika.scripter;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import com.google.common.collect.Lists;
+
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.command.CommandHandler;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -13,6 +19,7 @@ import net.minecraft.item.Item;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -36,6 +43,19 @@ public class HelperMethods {
 			manager.executeCommand(server, rawCommand);
 	}
 
+	public static void registerCommandAlias(String originalName, String[] alias) {
+		CommandHandler handler = (CommandHandler) getServer().getCommandManager();
+		Map<String, ICommand> commands = handler.getCommands();
+		ICommand original = commands.get(originalName);
+
+		for (String a : alias) {
+			ICommand icommand = commands.get(a);
+
+			if (icommand == null || !icommand.getName().equals(a))
+				commands.put(a, original);
+		}
+	}
+
 	public static MinecraftServer getServer() {
 		return FMLServerHandler.instance().getServer();
 	}
@@ -49,7 +69,7 @@ public class HelperMethods {
 	}
 
 	public static double[] getPosition(Entity entity) {
-		return new double[]{entity.posX, entity.posY, entity.posZ};
+		return new double[] { entity.posX, entity.posY, entity.posZ };
 	}
 
 	public static void updatePlayerInventory(EntityPlayerMP player) {
@@ -74,5 +94,17 @@ public class HelperMethods {
 
 	public static float pointDistancePlane(double x1, double y1, double x2, double y2) {
 		return (float) Math.hypot(x1 - x2, y1 - y2);
+	}
+
+	public static BlockPos navigate(BlockPos pos, String direction, int steps) {
+		return pos.offset(EnumFacing.byName(direction.toUpperCase()), steps);
+	}
+
+	public static List<BlockPos> getPosBox(BlockPos corner1, BlockPos corner2) {
+		return Lists.newArrayList(BlockPos.getAllInBox(corner1, corner1));
+	}
+
+	public static IBlockState getBlockState(World world, BlockPos pos) {
+		return world.getBlockState(pos);
 	}
 }
