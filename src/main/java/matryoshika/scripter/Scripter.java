@@ -56,6 +56,7 @@ public class Scripter {
 	@EventHandler
 	public static void onAction(FMLServerStartingEvent event) {
 		event.registerServerCommand(new CommandScriptReload());
+		ScripterEventHandler.execute(event, "FMLServerStartingEvent");
 	}
 	
 	@EventHandler
