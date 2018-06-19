@@ -1,11 +1,6 @@
 package matryoshika.scripter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.script.ScriptContext;
 import javax.script.ScriptException;
-import javax.script.SimpleScriptContext;
 
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.event.CommandEvent;
@@ -92,8 +87,8 @@ public class ScripterEventHandler {
 	public static void execute(Event event, String name) {
 		if (Loader.mappedScripts.get(name) == null)
 			return;
-		
-		for(String script : Loader.mappedScripts.get(name)) {
+
+		for (String script : Loader.mappedScripts.get(name)) {
 			try {
 				Scripter.engine.eval(script);
 				Scripter.invocableEngine.invokeFunction("onEvent", event);
@@ -106,14 +101,15 @@ public class ScripterEventHandler {
 	public static void execute(FMLStateEvent event, String name) {
 		if (Loader.mappedScripts.get(name) == null)
 			return;
-		Loader.mappedScripts.get(name).forEach(script -> {
+
+		for (String script : Loader.mappedScripts.get(name)) {
 			try {
 				Scripter.engine.eval(script);
 				Scripter.invocableEngine.invokeFunction("onEvent", event);
-			} catch (ScriptException | NoSuchMethodException e) {
+			} catch (Exception e) {
 				Scripter.logger.error("Error running " + Loader.getScriptName(script) + " during " + name + " : " + e.getCause().toString() + " : " + e.getStackTrace());
 			}
-		});
+		}
 	}
 
 	@SubscribeEvent(receiveCanceled = true, priority = EventPriority.HIGHEST)
