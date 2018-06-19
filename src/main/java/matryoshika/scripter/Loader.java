@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 public class Loader {
 
@@ -20,27 +23,19 @@ public class Loader {
 	public static Map<String, String> scriptNames = new HashMap<String, String>();
 
 	public static void loadScripts(File directory) {
-
-		Scripter.logger.error("Running loadScripts");
 		if (!directory.exists())
 			directory.mkdirs();
 
 		scripts = new ArrayList<File>();
-		Collection<File> ffiles = FileUtils.listFiles(directory, new String[] { "js" }, true);
-
-		for (File file : ffiles) {
-			if (file.isFile())
-				scripts.add(file);
-		}
+		FileUtils.listFiles(directory, new String[] { "js" }, true).forEach(scripts::add);
 
 		mapScripts();
 	}
 
 	public static void mapScripts() {
-		Scripter.logger.error("Running mapScripts");
 		for (File file : scripts) {
 			if (!file.getName().endsWith("js") || !file.getName().contains("scripter")) {
-				Scripter.logger.error("Skipping over " + file.getName());
+				Scripter.logger.info("Skipping over " + file.getName());
 				continue;
 			}
 
@@ -63,6 +58,7 @@ public class Loader {
 
 			mappedScripts.get(txt).add(script);
 			scriptNames.put(script, file.getName());
+			Scripter.logger.info("Adding Script: " + file.getName());
 		}
 	}
 
